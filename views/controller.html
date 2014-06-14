@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mobile Controller</title>
+  <style>
+  #explode {
+    width: 100px;
+    height: 100px;
+    float: right;
+  }
+  </style>
+</head>
+<body>
+
+  <div id="log">
+    <p>orientation : <span id="orientation"></span></p>
+    <p>alpha : <span id="alpha"></span></p>
+    <p>beta : <span id="beta"></span></p>
+    <p>gamma : <span id="gamma"></span></p>
+    <p>direction-x : <span id="direction-x"></span></p>
+    <p>direction-y : <span id="direction-y"></span></p>
+  </div>
+
+  <button id="explode">BOOM</button>
+
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+
+  var sense = {
+    directionX : 'none',
+    directionY : 'none'
+  }
+
+  if (window.DeviceOrientationEvent) {
+    window.addEventListener('deviceorientation', deviceOrientHandler, false);
+  }
+
+  function deviceOrientHandler (e) {
+    // device orientation
+    if (window.orientation == 0) {
+      document.getElementById('orientation').innerHTML = 'vertical';
+      if (e.gamma < -10) {
+        document.getElementById('direction').innerHTML = 'left';
+      } else {
+        document.getElementById('direction').innerHTML = 'right';
+      }
+    } else if (window.orientation == 90) {
+      document.getElementById('orientation').innerHTML = 'horizontal';
+      if (e.beta < -10) {
+        document.getElementById('direction-x').innerHTML = 'left';
+      } else if (e.beta > 10) {
+        document.getElementById('direction-x').innerHTML = 'right';
+      } else {
+        document.getElementById('direction-x').innerHTML = 'none';
+      }
+      sense.directionX = document.getElementById('direction-x').innerHTML;
+      if (e.gamma < -10) {
+        document.getElementById('direction-y').innerHTML = 'backward';
+      } else if (e.gamma > 10) {
+        document.getElementById('direction-y').innerHTML = 'forward';
+      } else {
+        document.getElementById('direction-y').innerHTML = 'none';
+      }
+      sense.directionY = document.getElementById('direction-y').innerHTML;
+    } else if (window.orientation == -90) {
+      document.getElementById('orientation').innerHTML = 'reversed horizontal';
+      if (e.beta > 10) {
+        document.getElementById('direction-x').innerHTML = 'left';
+      } else if (e.beta < -10) {
+        document.getElementById('direction-x').innerHTML = 'right';
+      } else {
+        document.getElementById('direction-x').innerHTML = 'none';
+      }
+      if (e.gamma > 10) {
+        document.getElementById('direction-y').innerHTML = 'backward';
+      } else if (e.gamma < -10) {
+        document.getElementById('direction-y').innerHTML = 'forward';
+      } else {
+        document.getElementById('direction-y').innerHTML = 'none';
+      }
+
+    }
+
+    // three axis
+    document.getElementById('alpha').innerHTML = e.alpha;
+    document.getElementById('beta').innerHTML = e.beta;
+    document.getElementById('gamma').innerHTML = e.gamma;
+  }
+
+  var socket = io.connect();
+
+  setInterval(function() {
+    socket.emit('move', JSON.stringify(sense));
+  }, 50);
+
+  document.getElementById('explode').onclick = function () {
+    socket.emit('explode');
+  }
+
+  </script>
+  
+</body>
+</html>
