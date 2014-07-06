@@ -39,3 +39,5 @@ io.listen(app, {log : false}).sockets.on('connection', function (socket) {
   });
 
 });
+
+console.log('server listening on port ' + port);
